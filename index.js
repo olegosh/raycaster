@@ -20,21 +20,7 @@ const PI = Math.PI;
 const fullCircleDeg = 360;
 const halfCircleDeg = fullCircleDeg / 2;
 const fullCircleRad = PI * 2;
-// const savingFromDividingByZeroValue = 1E-4;
 const safeMaxIntegerValue = Number.MAX_SAFE_INTEGER;
-
-// const sinTable = [];
-// const cosTable = [];
-// const tanTable = [];
-
-// for (let i = 0; i < fullCircleDeg; i += 1) {
-//   sinTable[i] = sin(i, true);
-//   cosTable[i] = cos(i, true);
-//   tanTable[i] = tan(i, true);
-// }
-// sinTable[fullCircleDeg] = sinTable[0];
-// cosTable[fullCircleDeg] = cosTable[0];
-// tanTable[fullCircleDeg] = tanTable[0];
 
 const map = [
   '111311131111811',
@@ -72,8 +58,8 @@ const logFontSize = 12;
 const logFont = 'monospace';
 const logFontColor = '#102C03';
 
-const playerDirectionLineColor = 'rgba(70, 50, 40, 0.1)'//'#91960C';
-const rayDirectionLineColor = 'rgba(100, 150, 15, 0.1)'//'#81b61C';
+const playerDirectionLineColor = 'rgba(70, 50, 40, 0.1)'
+const rayDirectionLineColor = 'rgba(100, 150, 15, 0.1)'
 const rayDirectionHelperLineColor = '#128932';
 const helpingStrokeRectColor = '#1f4b3a';
 const horizontalRayColor = '#f43112';
@@ -111,9 +97,7 @@ const halfOfPlayerFOV = playerFOV / 2;
 
 const tanOfHalfOfPlayerFOVRad = Math.tan(degreesToRadians(halfOfPlayerFOV));
 const distanceFromPlayerToProjectionPlane = halfOfProjectionPlaneWidth / tanOfHalfOfPlayerFOVRad;
-// console.log(distanceFromPlayerToProjectionPlane);//277.1281292110204 px
 const angleBetweenSubsequentRays = playerFOV / projectionPlaneWidth;//deg
-// console.log(angleBetweenSubsequentRays);//0.1875 deg
 
 const textures = [];
 const shadowedTextures = [];
@@ -132,22 +116,6 @@ const texturesSrc = [
 ///////////////////////////functions//////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 
-function randomInteger(min, max) {
-  return Math.floor(Math.random() * (1 + max - min) + min);
-}
-
-function randomColorHex() {
-  let colorString = '#';
-  const colorNumbers = [];
-  for(let i = 0; i < 6; i += 1) {
-    colorNumbers[i] = randomInteger(0, 15);
-  }
-  const colorValues = colorNumbers.map(number => {
-    return number.toString(16);
-  });
-  return colorString + colorValues.join('');
-}
-
 function degreesToRadians(deg) {
   return deg * PI / halfCircleDeg;
 }
@@ -155,29 +123,6 @@ function degreesToRadians(deg) {
 function radiansToDegrees(rad) {
   return rad * halfCircleDeg / PI;
 }
-
-// function transformAngle(deg, safe) {//:rad
-//   let newAngle = degreesToRadians(deg);
-//   if (safe) {
-//     newAngle += savingFromDividingByZeroValue;
-//   }
-//   return newAngle;
-// }
-
-// function tan(angle, safe) {//:rad
-//   let angleRad = transformAngle(angle, safe);
-//   return Math.tan(angleRad);
-// }
-
-// function sin(angle, safe) {//:rad
-//   let angleRad = transformAngle(angle, safe);
-//   return Math.sin(angleRad);
-// }
-
-// function cos(angle, safe) {//:rad
-//   let angleRad = transformAngle(angle, safe);
-//   return Math.cos(angleRad);
-// }
 
 function floor(num) {
   return Math.floor(num);
@@ -341,17 +286,17 @@ class Player {
   }
 
   move() {
-    //
+    //normalize the player angle
     this.angle = normalizeAngle(this.angle);
 
     this.angle = this.angle + (this.turnSpeed * this.turnDirection);
     const newX = this.x + (this.moveSpeed * this.moveDirection) * Math.cos(this.angle);
     const newY = this.y + (this.moveSpeed * this.moveDirection) * Math.sin(this.angle);
-    //
+    //collision detection of the player with the walls
     if (this.isWallCollision(newX, newY)) {
       return;
     }
-    //
+    //move the player
     this.x = newX;
     this.y = newY;
   }
@@ -416,7 +361,6 @@ class Player {
       type: '1',
       offset: 0
     };
-    let horizontalDistance = 0;
     let horizontalIntersectionRayLength = 0;
     let gridX = 0;
     let gridY = 0;
@@ -429,7 +373,7 @@ class Player {
       return {...intersection, length: safeMaxIntegerValue};
     }
 
-    //find first intersection point
+    //find a first intersection point
     if (facing.vertical === 'up') {
       pointY = floor(this.y / wallSize) * wallSize - 1;
     } else if (facing.vertical === 'down') {
@@ -451,28 +395,15 @@ class Player {
     gridX = floor(pointX / wallSize);
     gridY = floor(pointY / wallSize);
 
-    //update length
-    // horizontalIntersectionRayLength += abs((pointX - this.x) / cosTable[angleDeg]);
-    // if (angleDeg === 90 || angleDeg === 270) {
-    //   horizontalIntersectionRayLength += abs((pointY - this.y) / sinTable[angleDeg]);
-    // } else {
-    //   horizontalIntersectionRayLength += abs((pointX - this.x) / cosTable[angleDeg]);
-    // }
     horizontalIntersectionRayLength = findDistance(this.x, this.y, pointX, pointY);
-    // log(`length = ${horizontalIntersectionRayLength}, ${horizontalDistance}`, 10, 100);
 
     intersection.offset = floor(pointX % wallSize);
     intersection.type = map[gridY][gridX];
 
     //exit condition
     if (gridY >= map.length || gridY < 0 || gridX >= map[0].length || gridX < 0) {
-      // console.log('out');
       return {...intersection, length: horizontalIntersectionRayLength};
     }
-    // if (map[gridY][gridX] === '1') {
-    //   // console.log('grid "1"');
-    //   return {...intersection, length: horizontalIntersectionRayLength, type: '1'};
-    // }
     if (map[gridY][gridX] !== '0') {
       return this.switchGridTile(map[gridY][gridX], intersection, horizontalIntersectionRayLength);
     }
@@ -488,15 +419,13 @@ class Player {
     } else if (facing.vertical === 'down') {
       Ya = wallSize;
     }
-    Xa = wallSize / Math.tan(rayAngle);//tanTable[angleDeg];
+    Xa = wallSize / Math.tan(rayAngle);
     if ((facing.horizontal === 'left' && Xa > 0) || (facing.horizontal === 'right' && Xa < 0)) {
-      Xa = -wallSize / Math.tan(rayAngle);//tanTable[angleDeg];
+      Xa = -wallSize / Math.tan(rayAngle);
     }
 
     //loop
-    let y = 0;
     do {
-      y += 10;
       //find next point
       newPointX = pointX + Xa;
       newPointY = pointY + Ya;
@@ -510,9 +439,6 @@ class Player {
       //   horizontalRayColor,
       //   mapContext
       // );
-      //update length
-      // horizontalIntersectionRayLength += abs((newPointX - pointX) / cosTable[angleDeg]);
-      // log(`length = ${horizontalIntersectionRayLength}`, 10, 100 + y);
       //check grid
       gridY = floor(newPointY / wallSize);
       gridX = floor(newPointX / wallSize);
@@ -521,18 +447,15 @@ class Player {
       pointY = newPointY;
       //exit condition
       if (gridY >= map.length || gridY < 0 || gridX >= map[0].length || gridX < 0) {
-        // console.log('exit');
         break;
       }
       //another exit condition
       if (newPointX <= 0 || newPointX >= mapWidth || newPointY <= 0 || newPointY >= mapHeight) {
-        // console.log('exit "out"');
         break;
       }
     } while (map[gridY][gridX] === '0');
     //update length
     horizontalIntersectionRayLength = findDistance(this.x, this.y, pointX, pointY);
-    // log(`length = ${horizontalIntersectionRayLength}, ${horizontalDistance}`, 10, 150);
 
     intersection.offset = floor(pointX % wallSize);
     intersection.type = map[gridY][gridX];
@@ -591,13 +514,8 @@ class Player {
 
     //exit condition
     if (gridY >= map.length || gridY < 0 || gridX >= map[0].length || gridX < 0) {
-      // console.log('out');
       return {...intersection, length: verticalIntersectionRayLength};
     }
-    // if (map[gridY][gridX] === '1') {
-    //   // console.log('grid "1"');
-    //   return {...intersection, length: verticalIntersectionRayLength, type: '1'};
-    // }
     if (map[gridY][gridX] !== '0') {
       return this.switchGridTile(map[gridY][gridX], intersection, verticalIntersectionRayLength);
     }
@@ -613,9 +531,9 @@ class Player {
     } else if (facing.horizontal === 'left') {
       Xa = -wallSize;
     }
-    Ya = wallSize * Math.tan(rayAngle);//tanTable[angleDeg];
+    Ya = wallSize * Math.tan(rayAngle);
     if ((facing.vertical === 'up' && Ya > 0) || (facing.vertical === 'down' && Ya < 0)) {
-      Ya = -wallSize * Math.tan(rayAngle);//tanTable[angleDeg];
+      Ya = -wallSize * Math.tan(rayAngle);
     }
 
     //loop
@@ -680,17 +598,11 @@ class Player {
 
     let facing = this.rayFacing(rayAngle);
 
-    /////////////////////////
-    //horizontal intersection
-
     const horizontalIntersection = this.findHorizontalIntersection(rayAngle, facing);
     const horizontalIntersectionRayLength = horizontalIntersection.length;
 
     // log(`ray angle = ${round(radiansToDegrees(rayAngle))}`, 10, 20);
     // log(`horizontal ray length = ${horizontalIntersectionRayLength}`, 10, 30);
-
-    ///////////////////////
-    //vertical intersection
 
     const verticalIntersection = this.findVerticalIntersection(rayAngle, facing);
     const verticalIntersectionRayLength = verticalIntersection.length;
@@ -699,9 +611,6 @@ class Player {
     // log(`vertical ray length = ${verticalIntersectionRayLength}`, 10, 130);
 
     //find ray length = closest intersection ray length
-    // rayLength = (horizontalIntersectionRayLength < verticalIntersectionRayLength)
-      // ? horizontalIntersectionRayLength
-      // : verticalIntersectionRayLength;
     if (horizontalIntersectionRayLength < verticalIntersectionRayLength) {
       rayLength = horizontalIntersectionRayLength;
       intersection.type = horizontalIntersection.type;
@@ -728,7 +637,7 @@ class Player {
       mapContext
     );
 
-    //correction of fish-eye distortion
+    //correction of "fish-eye" distortion
     const correctedDistance = rayLength * Math.cos(rayAngle - this.angle);
 
     //calculate wall slice height
@@ -744,7 +653,7 @@ class Player {
     //   viewContext
     // );
 
-    //
+    //determine which texture to draw
     let textureArrayLink;
     if (intersection.side === 'horizontal') {
       textureArrayLink = textures;
@@ -771,9 +680,7 @@ class Player {
     let rayAngle = this.angle - degreesToRadians(halfOfPlayerFOV);
     let angleIncrement = degreesToRadians(angleBetweenSubsequentRays);
 
-    //TODO: loop for all the rays
-    // this.castRay(rayAngle);
-    //
+    //for all projection plane slices, cast a ray
     for(let r = 0; r < projectionPlaneWidth; r += 1) {
       this.castRay(rayAngle, r);
       drawLine(
@@ -788,7 +695,7 @@ class Player {
       rayAngle += angleIncrement;
     }
   }
-}//class Player
+}//class Player END
 
 class FrameCounter {
   constructor(timeStart) {
@@ -868,8 +775,6 @@ function draw() {
   player.move();
   player.castRays();
   player.draw();
-  // viewContext.drawImage(textures[0], 110, 0, 64, 64);
-  // viewContext.drawImage(textures[0], 0, 0, 1, 64, 100, 0, 1, 64);
 }
 
 function loadTextures() {
@@ -879,7 +784,6 @@ function loadTextures() {
     let img = document.createElement('img');
     img.src = texturesSrc[i];
     img.addEventListener('load', () => {
-      //textures.push(img);
       textures[i] = img;
       imagesCounter++;
       if (imagesCounter === texturesSrc.length) {
@@ -907,7 +811,6 @@ function loadTextures() {
             shadowedImg.src = shadowedSrc;
             shadowedImg.addEventListener('load', () => {
               shadowedCounter++;
-              // shadowedTextures.push(shadowedImg);
               shadowedTextures[j] = shadowedImg;
               if (shadowedCounter === textures.length) {
                 //start when all resouces are created and loaded
@@ -917,7 +820,6 @@ function loadTextures() {
               }
             });
           }
-          // loop();
         }
       }
     });
