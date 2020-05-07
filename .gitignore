@@ -1,2 +1,8 @@
 #file
 Thumbs.db
+.firebaserc
+firebase.json
+
+#dir
+/.firebase/
+/public/
